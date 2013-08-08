@@ -53,7 +53,7 @@ module.exports = function(option) {
   this.Pause = function( hash ){
     this.SendCall( 'd.stop', hash );
   }
-  this.Details = function() {
+  this.Details = function( callback ) {
     this.SendCall('d.multicall',['default'].concat(fields.torrents), function(d){
       var downloads = [];
       var data = $(d.substring(d.indexOf('\r\n\r\n'))).find('value array data value array data')
@@ -65,19 +65,20 @@ module.exports = function(option) {
         downloads[i].name = download.children('value:eq(2)').text() ;
         downloads[i].size = download.children('value:eq(3)').text() ;
         downloads[i].upsize = download.children('value:eq(4)').text() ;
-        downloads[i].ratio = download.children('value:eq(5)').text() ;
+        downloads[i].downsize = download.children('value:eq(13)').text() ;
         downloads[i].uprate = download.children('value:eq(6)').text() ;
         downloads[i].downrate = download.children('value:eq(7)').text() ;
+        downloads[i].ratio = download.children('value:eq(5)').text() ;
         downloads[i].peers = download.children('value:eq(8)').text() ;
         downloads[i].base_path = download.children('value:eq(9)').text() ;
         downloads[i].date = download.children('value:eq(10)').text() ;
         downloads[i].active = download.children('value:eq(11)').text() ;
         downloads[i].complete = download.children('value:eq(12)').text() ;
-        downloads[i].downsize = download.children('value:eq(13)').text() ;
         downloads[i].directory = download.children('value:eq(14)').text() ;
-        console.log(downloads[i])
       }
+      if ( callback ) callback( downloads );
     });
+    
   }
 
 }
