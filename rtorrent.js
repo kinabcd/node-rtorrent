@@ -15,12 +15,11 @@ module.exports = function(option) {
       if ( param.length > 0 ) {
         content += "<params>";
         for ( var i = 0 ; i < param.length ; i += 1 )
-          content += "<param><value>" + param[i] + "</value></param>";
+          content += "<param><value>" + htmlspecialchars(param[i]) + "</value></param>";
         content += "</params>"
       }
     }
     content += "</methodCall>"
-    
     var h = new Array();
     h[0] = "CONTENT_LENGTH"+String.fromCharCode(0)+ content.length + String.fromCharCode(0);
     h[1] = "SCGI"+String.fromCharCode(0)+"1" + String.fromCharCode(0);
@@ -43,9 +42,12 @@ module.exports = function(option) {
       if ( callback ) callback( buff );
     });
   };
-  this.Load = function( file ){
+  this.Load = function( file, start ){
     if ( /^magnet:/.test(file) || /^http:/.test(file) || /^https:/.test(file) )
-    this.SendCall( 'load', file );
+    var command = 'load';
+    if ( start ) command = 'load_start';
+    console.info( command, file );
+    this.SendCall( command, file );
   }
   this.Start = function( hash ){
     this.SendCall( 'd.start', hash );
@@ -81,6 +83,9 @@ module.exports = function(option) {
     
   }
 
+}
+function htmlspecialchars( str ) {
+  return str.replace(/\&/ig,"&amp;").replace(/\"/ig,"&quot;").replace(/\'/ig,"&#039;").replace(/\</ig,"&lt;").replace(/\>/ig,"&gt;");
 }
 var fields = {
   peers : ['p.get_address=', 'p.get_client_version=', 'p.get_completed_percent=', 'p.get_down_rate=', 'p.get_down_total=', 'p.get_id=', 'p.get_port=', 'p.get_up_rate=', 'p.get_up_total='],
