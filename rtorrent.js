@@ -1,5 +1,5 @@
 var net = require("net")
-var $ = require('jquery');
+var DOMParser = new (require('xmldom').DOMParser);
 module.exports = function(option) {
   this.host = option['host'] || "127.0.0.1";
   this.port = option['port'] || 5000;
@@ -20,18 +20,18 @@ module.exports = function(option) {
       }
     }
     content += "</methodCall>"
-    var h = new Array();
-    h[0] = "CONTENT_LENGTH"+String.fromCharCode(0)+ content.length + String.fromCharCode(0);
-    h[1] = "SCGI"+String.fromCharCode(0)+"1" + String.fromCharCode(0);
+    var head = new Array();
+    head[0] = "CONTENT_LENGTH"+String.fromCharCode(0)+ content.length + String.fromCharCode(0);
+    head[1] = "SCGI"+String.fromCharCode(0)+"1" + String.fromCharCode(0);
     var length = 0;
-    for( var i = 0 ; i < h.length ; i += 1 )
-      length += h[i].length;
+    for( var i = 0 ; i < head.length ; i += 1 )
+      length += head[i].length;
     var stream = new net.Stream();
     stream.setEncoding("UTF8");
     stream.connect( this.port, this.host );
     stream.write( length + ":" );
-    for ( var i = 0 ; i < h.length ; i += 1 )
-      stream.write( h[i] );
+    for ( var i = 0 ; i < head.length ; i += 1 )
+      stream.write( head[i] );
     stream.write( "," );
     stream.write( content ) ;
     var buff = "";
@@ -43,7 +43,7 @@ module.exports = function(option) {
     });
   };
   this.Load = function( file, start ){
-    if ( /^magnet:/.test(file) || /^http:/.test(file) || /^https:/.test(file) )
+    if ( /^magnet:/.test(file) || /^http:/.test(file) || /^https:/.test(file) ) return;
     var command = 'load';
     if ( start ) command = 'load_start';
     console.info( command, file );
@@ -58,26 +58,27 @@ module.exports = function(option) {
   this.Details = function( callback ) {
     this.SendCall('d.multicall',['default'].concat(fields.torrents), function(d){
       var downloads = [];
-      var data = $(d.substring(d.indexOf('\r\n\r\n'))).find('value array data value array data')
-      for ( var i = 0 ; i < data.length ; i += 1 ) {
+      var dom  = DOMParser.parseFromString(d.substring(d.indexOf('\r\n\r\n')));
+      var datas = dom.getElementsByTagName('array')[0].childNodes;
+      for ( var i = 0 ; i < datas.length ; i += 1 ) {
+        var data = datas[i].getElementsByTagName('array')[0].firstChild.getElementsByTagName('value')
         downloads[i] = {};
-        var download = $(data[i]);
-        downloads[i].hash = download.children('value:eq(0)').text() ;
-        downloads[i].stat = download.children('value:eq(1)').text() ;
-        downloads[i].name = download.children('value:eq(2)').text() ;
-        downloads[i].size = download.children('value:eq(3)').text() ;
-        downloads[i].upsize = download.children('value:eq(4)').text() ;
-        downloads[i].downsize = download.children('value:eq(13)').text() ;
-        downloads[i].skipsize = download.children('value:eq(15)').text() ;
-        downloads[i].uprate = download.children('value:eq(6)').text() ;
-        downloads[i].downrate = download.children('value:eq(7)').text() ;
-        downloads[i].ratio = download.children('value:eq(5)').text() ;
-        downloads[i].peers = download.children('value:eq(8)').text() ;
-        downloads[i].base_path = download.children('value:eq(9)').text() ;
-        downloads[i].date = download.children('value:eq(10)').text() ;
-        downloads[i].active = download.children('value:eq(11)').text() ;
-        downloads[i].complete = download.children('value:eq(12)').text() ;
-        downloads[i].directory = download.children('value:eq(14)').text() ;
+        downloads[i].hash = data[0].firstChild.firstChild.nodeValue;
+        downloads[i].stat = data[1].firstChild.firstChild.nodeValue;
+        downloads[i].name = data[2].firstChild.firstChild.nodeValue;
+        downloads[i].size = data[3].firstChild.firstChild.nodeValue;
+        downloads[i].upsize = data[4].firstChild.firstChild.nodeValue;
+        downloads[i].downsize = data[13].firstChild.firstChild.nodeValue;
+        downloads[i].skipsize = data[15].firstChild.firstChild.nodeValue;
+        downloads[i].uprate = data[6].firstChild.firstChild.nodeValue;
+        downloads[i].downrate = data[7].firstChild.firstChild.nodeValue;
+        downloads[i].ratio = data[5].firstChild.firstChild.nodeValue;
+        downloads[i].peers = data[8].firstChild.firstChild.nodeValue;
+        downloads[i].base_path = data[9].firstChild.firstChild.nodeValue;
+        downloads[i].date = data[10].firstChild.firstChild.nodeValue;
+        downloads[i].active = data[11].firstChild.firstChild.nodeValue;
+        downloads[i].complete = data[12].firstChild.firstChild.nodeValue;
+        downloads[i].directory = data[14].firstChild.firstChild.nodeValue;
       }
       if ( callback ) callback( downloads );
     });
