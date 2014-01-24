@@ -43,10 +43,9 @@ module.exports = function(option) {
     });
   };
   this.Load = function( file, start ){
-    if ( /^magnet:/.test(file) || /^http:/.test(file) || /^https:/.test(file) ) return;
+    if ( !(/^magnet:/.test(file) || /^http:/.test(file) || /^https:/.test(file)) ) return;
     var command = 'load';
     if ( start ) command = 'load_start';
-    console.info( command, file );
     this.SendCall( command, file );
   }
   this.Start = function( hash ){
@@ -63,28 +62,34 @@ module.exports = function(option) {
       for ( var i = 0 ; i < datas.length ; i += 1 ) {
         var data = datas[i].getElementsByTagName('value')
         downloads[i] = {};
-        downloads[i].hash = data[0].firstChild.firstChild.nodeValue;
-        downloads[i].stat = data[1].firstChild.firstChild.nodeValue;
-        downloads[i].name = data[2].firstChild.firstChild.nodeValue;
-        downloads[i].size = data[3].firstChild.firstChild.nodeValue;
-        downloads[i].upsize = data[4].firstChild.firstChild.nodeValue;
-        downloads[i].downsize = data[13].firstChild.firstChild.nodeValue;
-        downloads[i].skipsize = data[15].firstChild.firstChild.nodeValue;
-        downloads[i].uprate = data[6].firstChild.firstChild.nodeValue;
-        downloads[i].downrate = data[7].firstChild.firstChild.nodeValue;
-        downloads[i].ratio = data[5].firstChild.firstChild.nodeValue;
-        downloads[i].peers = data[8].firstChild.firstChild.nodeValue;
-        downloads[i].base_path = data[9].firstChild.firstChild.nodeValue;
-        downloads[i].date = data[10].firstChild.firstChild.nodeValue;
-        downloads[i].active = data[11].firstChild.firstChild.nodeValue;
-        downloads[i].complete = data[12].firstChild.firstChild.nodeValue;
-        downloads[i].directory = data[14].firstChild.firstChild.nodeValue;
+        downloads[i].hash = getValue( data[0] );
+        downloads[i].stat = getValue( data[1] );
+        downloads[i].name = getValue( data[2] );
+        downloads[i].size = getValue( data[3] );
+        downloads[i].upsize = getValue( data[4] );
+        downloads[i].downsize = getValue( data[13] );
+        downloads[i].skipsize = getValue( data[15] );
+        downloads[i].uprate = getValue( data[6] );
+        downloads[i].downrate = getValue( data[7] );
+        downloads[i].ratio = getValue( data[5] );
+        downloads[i].peers = getValue( data[8] );
+        downloads[i].base_path = getValue( data[9] );
+        downloads[i].date = getValue( data[10] );
+        downloads[i].active = getValue( data[11] );
+        downloads[i].complete = getValue( data[12] );
+        downloads[i].directory = getValue( data[14] );
       }
       if ( callback ) callback( downloads );
     });
     
   }
 
+}
+function getValue( data ) {
+  if ( !data ) return '';
+  if ( !data.firstChild ) return '';
+  if ( !data.firstChild.firstChild ) return '';
+  return data.firstChild.firstChild.nodeValue;
 }
 function htmlspecialchars( str ) {
   return str.replace(/\&/ig,"&amp;").replace(/\"/ig,"&quot;").replace(/\'/ig,"&#039;").replace(/\</ig,"&lt;").replace(/\>/ig,"&gt;");
