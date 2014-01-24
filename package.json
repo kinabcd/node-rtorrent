@@ -1,7 +1,7 @@
 {
   "name": "node-rtorrent-scgi",
   "description": "A rtorrent Client with scgi ( No xmlrpc )",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "homepage": "https://github.com/kinabcd/node-rtorrent",
   "author": {
     "name": "Kin Lo",
@@ -16,7 +16,7 @@
   },
   "main": "rtorrent",
   "dependencies": {
-    "jquery": ">=1.8.0"
+    "xmldom": ">=0.1.18"
   },
   "keywords": [
     "rtorrent",
