@@ -59,9 +59,9 @@ module.exports = function(option) {
     this.SendCall('d.multicall',['default'].concat(fields.torrents), function(d){
       var downloads = [];
       var dom  = DOMParser.parseFromString(d.substring(d.indexOf('\r\n\r\n')));
-      var datas = dom.getElementsByTagName('array')[0].childNodes;
+      var datas = dom.getElementsByTagName('array')[0].getElementsByTagName('array');
       for ( var i = 0 ; i < datas.length ; i += 1 ) {
-        var data = datas[i].getElementsByTagName('array')[0].firstChild.getElementsByTagName('value')
+        var data = datas[i].getElementsByTagName('value')
         downloads[i] = {};
         downloads[i].hash = data[0].firstChild.firstChild.nodeValue;
         downloads[i].stat = data[1].firstChild.firstChild.nodeValue;
