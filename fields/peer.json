@@ -1,0 +1,11 @@
+[
+    "p.get_address=",
+    "p.get_client_version=",
+    "p.get_completed_percent=",
+    "p.get_down_rate=",
+    "p.get_down_total=",
+    "p.get_id=",
+    "p.get_port=",
+    "p.get_up_rate=",
+    "p.get_up_total="
+]

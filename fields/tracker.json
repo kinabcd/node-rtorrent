@@ -1,0 +1,14 @@
+[
+    "t.get_group=",
+    "t.get_id=",
+    "t.get_min_interval=",
+    "t.get_normal_interval=",
+    "t.get_scrape_complete=",
+    "t.get_scrape_downloaded=",
+    "t.get_scrape_time_last=",
+    "t.get_type=",
+    "t.get_url=",
+    "t.is_enabled=",
+    "t.is_open=",
+    "t.get_scrape_incomplete="
+]
