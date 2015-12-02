@@ -28,6 +28,7 @@ conn = rtorrent({path:'/tmp/torrent.sock'});
 ```
 
 **SendCall**
+
 Makes a request. Return the raw response from rTorrent.
 
 ```javascript
@@ -37,6 +38,7 @@ conn.SendCall(methodName, params, function(err, xmlString) {
 ```
 
 **Details**
+
 get the list of torrents.
 
 ```javascript

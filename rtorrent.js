@@ -1,7 +1,6 @@
 var net = require("net")
 var url = require("url")
-var DOMParser = require('xmldom').DOMParser;
-var xmlbuilder = require("xmlbuilder")
+var xmlrpc = require('./lib/xmlrpc')
 
 var rtorrent = function(option) {
     option.debug = (option.debug || false)
@@ -13,7 +12,7 @@ rtorrent.prototype.SendCall = function(method, params, callback) {
         callback = params;
         params = null;
     }
-    var content = MakeSCGIXML(method, params);
+    var content = xmlrpc.build(method, params);
     var headers = {
         "CONTENT_LENGTH":content.length,
         'SCGI':1,
@@ -41,7 +40,9 @@ rtorrent.prototype.SendCall = function(method, params, callback) {
             console.log(buff)
             console.log('-- Response End --');
         }
-        if (callback) callback(null, buff);
+        var body = buff.substring(buff.indexOf('\r\n\r\n'));
+        var dom = xmlrpc.parse(body);
+        if (callback) callback(null, dom);
     });
     conn.on('error', function(err) {
         if (option.debug) console.log(err)
@@ -68,59 +69,29 @@ rtorrent.prototype.Pause = function(hash){
 }
 rtorrent.prototype.Details = function(callback) {
     fields = require('./fields/torrent.json');
-    this.SendCall('d.multicall',['default'].concat(fields), function(err, d) {
-        var downloads = [];
-        if (!d) {
+    rtfields = []
+
+    for (var j = 0 ; j < fields.length ; j += 1)
+        rtfields.push(fields[j].rt);
+    this.SendCall('d.multicall',['default'].concat(rtfields), function(err, dom) {
+        var torrents = [];
+        if (!dom) {
             if (callback) callback(null);
             return
         }
-        var dom  = new DOMParser().parseFromString(d.substring(d.indexOf('\r\n\r\n')));
-        var datas = dom.getElementsByTagName('array')[0].getElementsByTagName('array');
+        var datas = dom[0]
         for ( var i = 0 ; i < datas.length ; i += 1 ) {
-            var data = datas[i].getElementsByTagName('value');
-            downloads[i] = {};
-            downloads[i].hash = getValue( data[0] );
-            downloads[i].stat = getValue( data[1] );
-            downloads[i].name = getValue( data[2] );
-            downloads[i].size = getValue( data[3] );
-            downloads[i].upsize = getValue( data[4] );
-            downloads[i].downsize = getValue( data[13] );
-            downloads[i].skipsize = getValue( data[15] );
-            downloads[i].uprate = getValue( data[6] );
-            downloads[i].downrate = getValue( data[7] );
-            downloads[i].ratio = getValue( data[5] );
-            downloads[i].peers = getValue( data[8] );
-            downloads[i].base_path = getValue( data[9] );
-            downloads[i].date = getValue( data[10] );
-            downloads[i].active = getValue( data[11] );
-            downloads[i].complete = getValue( data[12] );
-            downloads[i].directory = getValue( data[14] );
+            var data = datas[i];
+            var torrent = {}
+            for (var j = 0 ; j < fields.length ; j += 1)
+                torrent[fields[j].key] = data[j];
+            torrents.push(torrent);
         }
-        if (callback) callback(downloads);
+        if (callback) callback(torrents);
     });
 
 }
 
-function getValue( data ) {
-    if ( !data ) return '';
-    if ( !data.firstChild ) return '';
-    if ( !data.firstChild.firstChild ) return '';
-    return data.firstChild.firstChild.nodeValue;
-}
-
-function MakeSCGIXML( method, param ) {
-    var root = xmlbuilder.create('methodCall');
-    var methodName = root.ele("methodName", method);
-    if ( typeof param == 'string' ) param = [ param ] ;
-    if ( param && param.length > 0 ) {
-        var params = root.ele("params");
-        for ( var i = 0 ; i < param.length ; i += 1 ) {
-            var href = url.parse(param[i]).href;
-            params.ele("param").ele("value", href);
-        }
-    }
-    return root.end({pretty:false});
-}
 module.exports = function(option) {
     return new rtorrent(option);
 }
