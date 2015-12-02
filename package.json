@@ -16,10 +16,9 @@
   },
   "main": "rtorrent",
   "dependencies": {
-    "xmlbuilder": "^4.1.0",
     "xmldom": "^0.1.19"
   },
-  "license": "LGPLv3",
+  "license": "LGPL-3.0",
   "keywords": [
     "rtorrent",
     "torrent"
