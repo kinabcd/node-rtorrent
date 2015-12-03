@@ -1,5 +1,5 @@
 rtorrent = require("../rtorrent")
-rclient = new rtorrent({})
+rclient = rtorrent({port:5000})
 rclient.Details(function(list) {
-  console.log(list)
+    console.log(list)
 })
