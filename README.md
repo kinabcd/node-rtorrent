@@ -29,17 +29,17 @@ conn = rtorrent({path:'/tmp/torrent.sock'});
 
 **SendCall**
 
-Makes a request. Return the raw response from rTorrent.
+Makes a request. Return the response from rTorrent.
 
 ```javascript
-conn.SendCall(methodName, params, function(err, xmlString) {
+conn.SendCall(methodName, params, function(err, data) {
     // Do something...
 });
 ```
 
 **Details**
 
-get the list of torrents.
+Get the list of torrents.
 
 ```javascript
 conn.Details(function(list) {
