@@ -13,8 +13,9 @@ rtorrent.prototype.SendCall = function(method, params, callback) {
     }
     var content = xmlrpc.build(method, params);
     scgi.request(option, content, function(err, body){
-        var dom = xmlrpc.parse(body);
-        if (callback) callback(err,dom);
+        if (!callback) return;
+        var dom = xmlrpc.parse(body); 
+        callback(err, dom);
     });
 }
 rtorrent.prototype.Load = function(file, start){
