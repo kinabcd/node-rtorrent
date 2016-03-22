@@ -1,8 +1,12 @@
 var scgi = require('./lib/scgi')
 var xmlrpc = require('./lib/xmlrpc')
+var config = require('./config.json')
 
 var rtorrent = function(option) {
-    option.debug = (option.debug || false)
+    option.host = (option.host || config.host || null);
+    option.port = (option.port || config.port || null);
+    option.path = (option.path || config.path || null);
+    option.debug = (option.debug || config.debug || false);
     this.option = option;
 }
 rtorrent.prototype.SendCall = function(method, params, callback) {
@@ -57,4 +61,41 @@ rtorrent.prototype.Details = function(callback) {
 
 module.exports = function(option) {
     return new rtorrent(option);
+}
+
+if (require.main === module) {
+    console.log('node-rtorrent cli');
+    var args = process.argv.slice(2);
+    var option = {};
+    var files = [];
+    var method = 'load';
+
+    for (var i = 0 ; i < args.length ; i += 1) {
+        var arg = args[i];
+        if (arg == '-c') {
+            var ip_port = /(\d+\.\d+\.\d+\.\d+):(\d+)/.exec(args[i+1]);
+            if (ip_port) {
+                option.host = ip_port[1];
+                option.port = ip_port[2];
+            } else {
+                option.path = args[i+1];
+            }
+            i += 1;
+        } else if (arg == 'list') {
+            method = 'list';
+        } else if (/^(https:|http:|magnet:)/.exec(arg)){
+            files.push(args[i]);
+        }
+
+    }
+    var rt = new rtorrent(option);
+    if (method == 'load') {
+        for (var i in files )
+            rt.Load(files[i], true);
+    } else if (method == 'list') {
+        rt.Details(function(data) {
+            console.log(data);
+        });
+    }
+
 }
