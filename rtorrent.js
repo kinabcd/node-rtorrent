@@ -62,10 +62,7 @@ rtorrent.prototype.Details = function(callback) {
 module.exports = function(option) {
     return new rtorrent(option);
 }
-
-if (require.main === module) {
-    console.log('node-rtorrent cli');
-    var args = process.argv.slice(2);
+function cliCommand(args, next) {
     var option = {};
     var files = [];
     var method = 'load';
@@ -92,10 +89,42 @@ if (require.main === module) {
     if (method == 'load') {
         for (var i in files )
             rt.Load(files[i], true);
+        next();
     } else if (method == 'list') {
         rt.Details(function(data) {
             console.log(data);
+            next();
         });
+    } else {
+        next();
     }
 
 }
+if (require.main === module) {
+    console.log('node-rtorrent cli');
+    var args = process.argv.slice(2);
+    if (args.length > 0) {
+        cliCommand(args);
+    } else {
+        var readline = require('readline');
+        const rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout
+        });
+        rl.setPrompt('> ');
+        rl.prompt();
+        rl.on('line', (arg) => {
+            var args = arg.split(' ');
+            cliCommand(args, () => {
+                rl.prompt();
+            });
+        });
+        rl.on('close', () => {
+            process.exit(0);
+        })
+
+
+    }
+}
+
+
